@@ -1,0 +1,3125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Why an Impedance Curve Never Became a Sound-Pressure Curve</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$','$'], ['\\(','\\)']],
+    displayMath: [['$$','$$'], ['\\[','\\]']],
+    macros: {}
+  },
+  startup: {
+    ready() {
+      MathJax.startup.defaultReady();
+    }
+  }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+  :root {
+    --bg: #fafaf8;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --border: #e0e0dc;
+    --accent: #c3512b;
+    --accent-hover: #a34120;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 4px 16px rgba(0,0,0,0.08);
+    --radius: 12px;
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-serif: 'Charter', 'Georgia', 'Times New Roman', serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Landing ── */
+  #landing {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 2rem; text-align: center;
+  }
+  #landing h1 {
+    font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+    font-weight: 700; letter-spacing: -0.02em;
+    max-width: 720px; margin-bottom: .35em; line-height: 1.25;
+  }
+  #landing .subtitle {
+    color: var(--text-secondary); font-size: 1.05rem;
+    max-width: 560px; margin-bottom: 2.8rem; line-height: 1.5;
+  }
+  .card-grid { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 2rem 2rem 1.6rem; width: 320px; cursor: pointer;
+    transition: box-shadow .2s, transform .2s; text-align: left;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .card .lang-tag {
+    display: inline-block; font-size: .7rem; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+    width: fit-content;
+  }
+  .card.en .lang-tag { background: #e8f0fe; color: #1a56c4; }
+  .card.zh .lang-tag { background: #fef3e2; color: #b8450e; }
+  .card h2 { font-size: 1.15rem; font-weight: 650; line-height: 1.35; letter-spacing: -0.01em; }
+  .card p { font-size: .85rem; color: var(--text-secondary); line-height: 1.5; flex: 1; }
+  .card .arrow { font-size: .85rem; font-weight: 500; color: var(--accent); }
+
+  /* ── Article ── */
+  #article-view { display: none; max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+  #article-view.show { display: block; }
+  #article-view nav {
+    display: flex; align-items: center; gap: .6rem; margin-bottom: 2.2rem;
+    padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  #back-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 14px; font-size: .82rem; cursor: pointer; color: var(--text-secondary);
+    font-family: var(--font-sans); transition: background .15s;
+  }
+  #back-btn:hover { background: #f0f0ec; }
+  #article-content { font-family: var(--font-serif); font-size: 1.05rem; line-height: 1.75; color: #222; }
+
+  /* ── Rendered markdown styles ── */
+  #article-content h1 { font-family: var(--font-sans); font-size: 1.9rem; font-weight: 700; margin: .3em 0 .5em; line-height: 1.2; letter-spacing: -0.02em; }
+  #article-content h2 { font-family: var(--font-sans); font-size: 1.35rem; font-weight: 650; margin: 1.8em 0 .4em; }
+  #article-content h3 { font-family: var(--font-sans); font-size: 1.1rem; font-weight: 600; margin: 1.4em 0 .3em; }
+  #article-content p { margin: .75em 0; }
+  #article-content blockquote {
+    margin: 1em 0; padding: .6em 1.2em; border-left: 3px solid var(--accent);
+    background: #fafaf7; border-radius: 0 6px 6px 0; color: #444;
+  }
+  #article-content blockquote p { margin: .35em 0; }
+  #article-content ul, #article-content ol { margin: .6em 0 .6em 1.4em; }
+  #article-content li { margin: .2em 0; }
+  #article-content code { font-size: .88em; background: #f4f4f0; padding: 1px 5px; border-radius: 3px; }
+  #article-content pre {
+    background: #f6f6f2; padding: 1em 1.2em; border-radius: 8px;
+    overflow-x: auto; margin: .8em 0; font-size: .88em; line-height: 1.45;
+    border: 1px solid var(--border);
+  }
+  #article-content pre code { background: none; padding: 0; }
+  #article-content hr { border: none; border-top: 1px solid var(--border); margin: 2.2em 0; }
+  #article-content strong { font-weight: 650; }
+  #article-content .mjx-math { font-size: 1.05em; }
+  #article-content .display-math { display: block; overflow-x: auto; margin: 1em 0; }
+  #article-content .inline-math { display: inline; }
+
+  @media (max-width: 640px) {
+    #article-content { font-size: 1rem; }
+    #article-content h1 { font-size: 1.5rem; }
+    #landing h1 { font-size: 1.4rem; }
+    .card { width: 100%; max-width: 360px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ Landing ═══ -->
+<div id="landing">
+  <h1>Why an Impedance Curve Never Became a Sound-Pressure Curve</h1>
+  <p class="subtitle">From motional impedance and back-EMF to passive crossovers and the Zobel network — available in English and Chinese.</p>
+  <div class="card-grid">
+    <div class="card en" onclick="showArticle('en')">
+      <span class="lang-tag">English</span>
+      <h2>Why an Impedance Curve Never Became a Sound-Pressure Curve</h2>
+      <p>How a lumpy impedance curve and a flat sound-pressure curve can both be true — and what that means for crossovers.</p>
+      <span class="arrow">Read →</span>
+    </div>
+    <div class="card zh" onclick="showArticle('zh')">
+      <span class="lang-tag">中文</span>
+      <h2>一条阻抗曲线，为什么没有变成一条声压曲线？</h2>
+      <p>从电、力、机械阻抗到功率分频、Zobel 与电子分频。</p>
+      <span class="arrow">阅读 →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ Article view ═══ -->
+<div id="article-view">
+  <nav>
+    <button id="back-btn" onclick="backToLanding()">← Back</button>
+    <span id="article-label" style="font-size:.82rem;color:var(--text-secondary)"></span>
+  </nav>
+  <div id="article-content"></div>
+</div>
+
+<!-- ═══ Markdown content (both articles embedded) ═══ -->
+<script type="text/markdown" id="md-en">
+# Why an Impedance Curve Never Became a Sound-Pressure Curve
+
+## From the electrical, mechanical, and motional impedance of a loudspeaker to passive crossovers, the Zobel network, and active crossovers
+
+I want to start with a small confession, because every good story starts with one.
+
+For a long time I had a quiet, stubborn confusion about loudspeakers. Every time I looked at the impedance curve of a woofer — a real, honest, measured impedance curve — it looked *awful*. Down near the resonance frequency there was a huge, ugly peak. Above it, the voice-coil inductance made the curve climb again, tilting upward without apology. Put the driver in a vented box and the low end even split into *two* peaks, like a mountain range drawn by someone in a hurry.
+
+None of it looked "flat." It looked like the opposite of flat.
+
+And yet — here is the part that kept me up at night — when I looked at the *frequency response* of the same driver, in the band where it actually plays music, the sound pressure was often quite flat. Smooth. Well behaved.
+
+So the question came out almost by itself:
+
+> If I feed a voltage into a load whose impedance is this lumpy, shouldn't the current lurch up and down with it? And at the mechanical resonance, where the cone is supposedly *easiest* to move, shouldn't the sound pressure bulge along with the impedance? So why doesn't the impedance curve ever turn into a sound-pressure curve?
+
+It sounds like a beginner's question. It is not. Follow it honestly, and it drags you through nearly everything important in loudspeaker design: how current makes force, how a cone moves, how motion generates a back-voltage, how mechanical impedance maps onto electrical impedance, and how sound pressure manages to stay flat anyway. Keep going one more step and you meet the passive crossover. Then the Zobel network. Then the active crossover.
+
+What follows is that journey, told the way I finally understood it — which is to say, the way I wish someone had told it to me: one idea at a time, with the "why" always in view.
+
+---
+
+## 1. First rule: never jump straight from "impedance" to "sound pressure"
+
+The most common mistake is the laziest one. We see
+
+\[Z = \frac{V}{I}\]
+
+and our reflexes fill in the rest: *impedance big, current small, so sound small; impedance small, current big, so sound big.* For a heater — a resistor whose only job is to get warm — that's roughly fine. For a loudspeaker it's simply wrong.
+
+Because a loudspeaker is not an electrical load that happens to be connected to a motor. It *is* a motor. It is a full electromechanical transducer, and the signal runs through a loop:
+
+\[\text{voltage} \rightarrow \text{current} \rightarrow \text{force} \rightarrow \text{motion} \rightarrow \text{air} \rightarrow \text{sound pressure}\]
+
+with a second, backward-running loop on top of it:
+
+\[\text{cone motion} \rightarrow \text{back-EMF} \rightarrow \text{change in current}.\]
+
+So the impedance curve is what you see when you peer into the device through its *electrical terminals only*. The sound-pressure curve is a *different transfer function* — it's what you get when you walk the whole chain from voltage all the way to pressure. The two are related, obviously. But they are not the same function, and treating them as if they were is where every confusion begins.
+
+---
+
+## 2. The loudspeaker's first equation: electricity
+
+Start at the voice coil. If the cone were somehow glued still, the coil would just be a series resistance and inductance:
+
+\[Z_e = R_e + j\omega L_e.\]
+
+So far, boring: an RL load. But the coil sits in a magnetic field, and it *moves*. A conductor moving in a magnetic field generates a voltage, and that voltage is proportional to how fast it moves:
+
+\[e_{\text{bemf}} = Bl \cdot v,\]
+
+where \(B\) is the flux density in the gap, \(l\) the length of wire in the field, \(v\) the coil velocity, and \(Bl\) — the "force factor" — is the number that ties the electrical and mechanical worlds together.
+
+So the real electrical equation is not \(V = Z_e I\). It is
+
+\[V = Z_e I + Bl\,v.\]
+
+Read that equation slowly, because it is the whole trick in miniature: **the voltage from your amplifier does not all land on the coil's resistance and inductance. A chunk of it is pushed back by the motion of the cone itself.** The moment you accept this, the loudspeaker stops being a resistor and becomes something with a mind of its own.
+
+---
+
+## 3. The second equation: force
+
+Current in a magnetic field feels a force. That's Lorentz:
+
+\[F = Bl\, I.\]
+
+And now look at the symmetry — it's gorgeous. One equation turns current into force:
+
+\[F = Bl\, I,\]
+
+and the other turns velocity into voltage:
+
+\[e = Bl\, v.\]
+
+The same constant \(Bl\) sits in both. It is the *gear ratio* between two worlds: electrical on one side, mechanical on the other. If you want one mental image to keep forever, keep this one: **\(Bl\) is the transmission between the electrical road and the mechanical road.**
+
+---
+
+## 4. The cone is not free to move however it wants: mechanical impedance
+
+A force is applied. Fine. Now the natural question: *how fast does that force make the cone go?*
+
+And here a wonderful thing happens — the mechanical world starts speaking the same language as the electrical one. Just as electrical impedance is voltage over current,
+
+\[Z_e = \frac{V}{I},\]
+
+mechanical impedance is force over velocity:
+
+\[Z_m = \frac{F}{v}.\]
+
+The correspondence is almost too clean:
+
+\[V \leftrightarrow F, \qquad I \leftrightarrow v.\]
+
+A real cone has at least three mechanical ingredients: its moving mass \(M_{ms}\), the losses \(R_{ms}\) (the suspension, the spider, the surround), and the compliance \(C_{ms}\) of that same suspension acting like a spring. Newton plus Hooke gives
+
+\[M_{ms}\ddot{x} + R_{ms}\dot{x} + \frac{x}{C_{ms}} = F,\]
+
+and in the sinusoidal steady state, with \(\dot{x}=v\), this becomes
+
+\[Z_m = R_{ms} + j\omega M_{ms} + \frac{1}{j\omega C_{ms}} = R_{ms} + j\left(\omega M_{ms} - \frac{1}{\omega C_{ms}}\right).\]
+
+Stop and admire this. A mechanical system — mass, spring, friction — has just turned into an *RLC circuit*. Mass looks like an inductor (\(j\omega M\)). A spring looks like a capacitor (\(1/j\omega C\)). Friction looks like a resistor. This is not a coincidence and it is not a trick of notation. Both worlds are describing the same thing: *how much "push" is required for a given "flow."* In electricity the flow is current; in mechanics the flow is velocity. Once you see that, a cone and a capacitor are not merely analogous — they are, mathematically, the same animal.
+
+---
+
+## 5. Why the resonance shows up as a giant *electrical* impedance peak
+
+Now the first confusion can die.
+
+Mechanical resonance happens when the mass term and the spring term cancel:
+
+\[\omega_s M_{ms} = \frac{1}{\omega_s C_{ms}} \quad\Rightarrow\quad \omega_s = \frac{1}{\sqrt{M_{ms}C_{ms}}}.\]
+
+At that one frequency, the \(+j\omega M_{ms}\) and the \(-j/(\omega C_{ms})\) kill each other, and the mechanical impedance collapses to just the losses:
+
+\[Z_m(\omega_s) \approx R_{ms}.\]
+
+If the suspension is good, \(R_{ms}\) is small, so the cone is *easy* to move at resonance. Push a little, and it flies. Fine. So here is the paradox: if the cone moves so easily at resonance, why does the *electrical* impedance show a huge peak there?
+
+Precisely *because* it moves so easily.
+
+The cone's velocity \(v\) is large, so the back-EMF \(Bl v\) is large, and that back-EMF fights the amplifier harder, which *reduces* the input current. Walk it through with the equations. From \(Bl I = Z_m v\) we get \(v = \frac{Bl}{Z_m}I\). Substitute into \(V = Z_e I + Bl v\):
+
+\[V = \left[ Z_e + \frac{(Bl)^2}{Z_m} \right] I,\]
+
+and therefore the input impedance is
+
+\[Z_{\text{in}} = Z_e + \frac{(Bl)^2}{Z_m}.\]
+
+That second term — the **motional impedance** — is the whole story. At resonance \(Z_m\) is small, so \((Bl)^2/Z_m\) is enormous, so \(Z_{\text{in}}\) is enormous. **The impedance peak is not the cone being stuck. It is the cone being free.** The big peak you see on the chart is the shadow that the mechanical resonance casts onto the electrical port. Read it backwards and the "ugly" curve suddenly has a physical meaning: it is a picture of how much the cone resists motion, reflected through the motor.
+
+---
+
+## 6. But then why doesn't the sound pressure shoot to the sky?
+
+This is the moment where most people get stuck, and it is worth going slowly.
+
+If you drove the speaker with an *ideal constant-current* source, then \(v = Bl\,I/Z_m\), and at resonance \(Z_m \to R_{ms}\) (small), so the velocity would indeed spike. But a real power amplifier is not a current source. It is close to a *constant-voltage* source with very low output impedance. It holds \(V\) fixed, not \(I\).
+
+So stop looking at \(v/I\) and look at \(v/V\) — how much velocity you get *per volt*. Combine the two equations, \(V = Z_e I + Bl v\) and \(Bl I = Z_m v\):
+
+\[\frac{v}{V} = \frac{Bl}{Z_e Z_m + (Bl)^2}.\]
+
+Now check the resonance. If \(Z_m \approx R_{ms}\) and \(Z_e R_{ms} \ll (Bl)^2\), then
+
+\[\frac{v}{V} \approx \frac{Bl}{(Bl)^2} = \frac{1}{Bl}.\]
+
+It does *not* blow up as \(Z_m \to 0\). Why? Because of a tight, built-in negative feedback loop:
+
+\[v\uparrow \;\Rightarrow\; e_{\text{bemf}}\uparrow \;\Rightarrow\; I\downarrow \;\Rightarrow\; F = Bl I \downarrow.\]
+
+The cone reaches for more motion, and its own back-EMF yanks the current down to stop it. **The loudspeaker brakes itself.** This little feedback loop is, to me, the single most beautiful piece of physics in the whole device — a motor that automatically regulates its own excursion, for free, with no control circuit.
+
+---
+
+## 7. The bigger mystery: why is the midrange so flat?
+
+We have explained why resonance doesn't cause a catastrophe. But there is a deeper, quieter wonder: why is the midrange of an ordinary woofer — tens of Hz to a few kHz — so *flat*?
+
+The answer lives inside the mechanical impedance. Above resonance, \(f \gg f_s\), the mass term \(\omega M_{ms}\) grows while the spring term \(1/(\omega C_{ms})\) shrinks. Their ratio is
+
+\[\frac{\omega M_{ms}}{1/(\omega C_{ms})} = \omega^2 M_{ms} C_{ms} = \left(\frac{f}{f_s}\right)^2.\]
+
+Take a driver with \(f_s = 50\) Hz and look at \(f = 1\) kHz: the ratio is \((1000/50)^2 = 400\). The mass is already *four hundred times* more important than the spring. So well above resonance,
+
+\[Z_m \approx R_{ms} + j\omega M_{ms} \approx j\omega M_{ms}.\]
+
+This is the **mass-controlled region**, and it is the loudspeaker's happy place.
+
+---
+
+## 8. In the mass-controlled region, the cone actually moves *less*
+
+Follow it through. Ignore the coil inductance for a moment (\(Z_e \approx R_e\)) and take \(Z_m \approx j\omega M_{ms}\):
+
+\[\frac{v}{V} = \frac{Bl}{R_e\, j\omega M_{ms} + (Bl)^2}.\]
+
+Once \(\omega M_{ms} R_e \gg (Bl)^2\), this simplifies to
+
+\[\frac{v}{V} \approx \frac{Bl}{j\omega M_{ms} R_e}, \qquad\text{so}\qquad |v| \propto \frac{1}{\omega}.\]
+
+In words: **give a speaker a fixed voltage, and the higher the frequency, the *slower* the cone moves** — down 6 dB for every octave. And the displacement \(x\) (since \(v = j\omega x\)) falls even faster:
+
+\[|x| \propto \frac{1}{\omega^2},\]
+
+down 12 dB per octave.
+
+But wait — this seems to make things *worse*. If the cone moves less and less as frequency rises, why doesn't the sound fall off with it?
+
+---
+
+## 9. Because a loudspeaker does not radiate from displacement — it radiates from *acceleration*
+
+Here is the hinge of the whole argument.
+
+Let \(S_d\) be the cone's effective radiating area and \(v\) its velocity. The volume velocity — how much air it shoves per second — is
+
+\[U = S_d\, v.\]
+
+For a small piston (small compared to the wavelength), the far-field pressure is proportional to the *rate of change* of that volume velocity:
+
+\[p \propto \frac{j\omega\rho_0}{r} U \propto j\omega S_d v.\]
+
+That \(j\omega\) in front is the key. Pressure scales with \(\omega v\), not with \(v\) alone. And we just found \(v \propto 1/\omega\). So
+
+\[p \propto \omega \cdot \frac{1}{\omega} \approx \text{constant}.\]
+
+There it is. The velocity falls with frequency, but the *efficiency with which velocity turns into pressure rises with frequency*, and the two cancel exactly. **That cancellation is the entire reason a normal moving-coil driver has a naturally flat midrange.** The cone moves less, but each unit of motion counts for more.
+
+---
+
+## 10. A more intuitive way to say it: pressure tracks *acceleration*
+
+Since \(a = j\omega v\) and \(p \propto j\omega S_d v\), we can say it more simply:
+
+\[p \propto S_d\, a.\]
+
+In the mass-controlled region, the story collapses into a beautiful short chain. Fixed voltage \(V\) means the current is roughly \(I \approx V/R_e\), so the force \(F = Bl I\) is roughly constant. In mass control, \(F \approx M_{ms} a\), so
+
+\[a \approx \frac{F}{M_{ms}}\]
+
+is roughly constant. And \(p \propto S_d a\), so
+
+\[V \rightarrow F \rightarrow a \rightarrow p\]
+
+is one long chain of *constant* proportions. That is why the frequency response is flat. Not because the cone moves a constant amount — it doesn't — but because the *acceleration* is constant, and acceleration is what the air actually feels.
+
+---
+
+## 11. A set of relations worth taping to the wall
+
+For a driver in its mass-controlled, flat-response region, you get four facts that hang together perfectly:
+
+- **Displacement** \(x\): \(\propto 1/f^2\) (−12 dB/oct)
+- **Velocity** \(v\): \(\propto 1/f\) (−6 dB/oct)
+- **Acceleration** \(a\): \(\approx\) constant (0 dB/oct)
+- **Sound pressure** \(p\): \(\approx\) constant (0 dB/oct)
+
+And these relations explain something every speaker engineer knows in their bones: **why low frequencies eat excursion for breakfast.** To make the same sound pressure at 100 Hz as at 1 kHz, the cone needs roughly
+
+\[\left(\frac{1000}{100}\right)^2 = 100\]
+
+times the displacement. Bass is expensive not mainly in watts, but in *throw*.
+
+---
+
+## 12. Now re-read the impedance curve — there is no contradiction left
+
+The trick is to see that we were never looking at one problem. We were looking at three different questions wearing the same costume.
+
+The input impedance,
+
+\[Z_{\text{in}} = Z_e + \frac{(Bl)^2}{Z_m},\]
+
+answers: *how much current will flow if I apply a voltage?*
+
+The velocity-per-volt,
+
+\[\frac{v}{V} = \frac{Bl}{Z_e Z_m + (Bl)^2},\]
+
+answers: *how fast will the cone move per volt?*
+
+And the pressure-per-volt,
+
+\[\frac{p}{V} \propto \frac{j\omega S_d Bl}{Z_e Z_m + (Bl)^2},\]
+
+answers the question we actually care about: *how much sound do I get per volt?*
+
+An impedance curve that is lumpy and a pressure curve that is flat are not in conflict. **They were never the same function.** One is the view through the electrical port; the other is the view through the whole electro-mechano-acoustic chain. They are allowed to be different shapes. Once you can hold both in your head at once, the "paradox" simply dissolves.
+
+---
+
+## 13. Now, and only now, the passive crossover enters
+
+Everything so far assumed the amplifier drives the driver directly. Now put a passive crossover in between.
+
+Why does the crossover matter *physically*, beyond just "it filters the signal"? Because of the loop we found. The back-EMF has to flow back out of the voice coil and through *whatever circuit the amplifier has put in series with the driver*. If that circuit is the amplifier alone, the amplifier's output impedance is tiny — say \(0.05\ \Omega\) — and the back-EMF has a nice low-resistance path home, which lets it generate a strong braking current, which (through \(F = Bl I\)) produces strong electrical damping. That is what people mean when they say a good amplifier "controls" the driver.
+
+A passive crossover changes that path. And the higher the crossover order, the more it changes it.
+
+---
+
+## 14. First- and second-order crossovers are easy to trust. Fourth-order gets interesting
+
+A first-order low-pass is just a series inductor. At high frequencies its impedance \(j\omega L\) grows, the source impedance seen by the driver climbs, and the amplifier's grip loosens. That intuition is correct, and it's enough for a first-order network.
+
+But a real **LR4** — a fourth-order Linkwitz-Riley low-pass, the standard ladder \(L_1{-}C_2{-}L_3{-}C_4\) — is a different beast. You can no longer point at one series inductor and call it a day. Short the ideal amplifier's output (which is how you find what the driver "looks back into"), and the source impedance seen from the driver's terminals is
+
+\[Z_s = Z_{C4} \parallel \left[ Z_{L3} + \left( Z_{C2} \parallel Z_{L1} \right) \right].\]
+
+This thing is *wildly* frequency-dependent, and it can develop sharp local peaks — impedance anti-resonances — right where the ladder's reactances cancel.
+
+---
+
+## 15. A counterintuitive concrete example: 1 kHz, 100 ohms
+
+Let me put numbers on it, because a number sticks where a sentence slides off. Take a fourth-order low-pass with
+
+\[L_1 = 1.0\ \text{mH},\quad C_2 = 22\ \mu\text{F},\quad L_3 = 0.47\ \text{mH},\quad C_4 = 4.7\ \mu\text{F}.\]
+
+At \(f = 1\) kHz:
+
+\[Z_{L1} = j6.28\ \Omega, \qquad Z_{C2} \approx -j7.23\ \Omega.\]
+
+Nearly equal, opposite signs. Put them in parallel and they nearly cancel into a big impedance:
+
+\[Z_{L1} \parallel Z_{C2} \approx j48\ \Omega,\]
+
+and by the time the rest of the ladder is folded in, the driver looks back and sees
+
+\[|Z_s| \approx 100\ \Omega.\]
+
+At *1 kHz*. In the middle of a woofer's working band. Compare that to the amplifier's own \(0.05\ \Omega\), or even to the voice coil's \(R_e \approx 3.2\ \Omega\), and the comforting old rule — *"a little extra source resistance is nothing, the coil's own resistance dominates anyway"* — quietly falls apart. At these frequencies, \(R_e\) is no longer the big resistor in the loop.
+
+---
+
+## 16. The back-EMF no longer sees an amplifier. It sees a wall.
+
+Follow the braking current. Driven directly, the back-EMF \(Bl v\) pushes current roughly \(Bl v / R_e\) through a \(3.2\ \Omega\) coil — a loop admittance around \(0.31\) S. But with the passive network presenting \(Z_s \approx -j100\ \Omega\) from the driver's side, the braking current becomes
+
+\[I_{\text{bemf}} = \frac{Bl v}{Z_e + Z_s},\]
+
+which can drop by tens of times. And what actually dissipates mechanical energy is the *real part* of that loop:
+
+\[R_{me}(\omega) = (Bl)^2\, \operatorname{Re}\!\left[ \frac{1}{Z_e + Z_s} \right].\]
+
+If \(Z_s\) is mostly reactance, that real part can fall by orders of magnitude. So yes — at certain frequencies, a fourth-order passive crossover genuinely *does* weaken the amplifier's electrical grip on the cone. This isn't "damping factor" marketing folklore; it falls straight out of the electromechanical equations.
+
+---
+
+## 17. Then why doesn't it sound catastrophic in practice?
+
+Here comes the second mystery, and the resolution is as satisfying as the first.
+
+Suppose the active, direct connection gives electrical damping of \(15\ \mathrm{N\,s/m}\) and the passive network drops it to \(3\ \mathrm{N\,s/m}\) — a factor of five. Sounds like it should be a disaster. But at 1 kHz, a woofer with \(f_s\) around 50 Hz is deep in its mass-controlled region:
+
+\[Z_m \approx j\omega M_{ms}.\]
+
+With \(M_{ms} = 15\) g at 1 kHz:
+
+\[\omega M_{ms} = 2\pi \cdot 1000 \cdot 0.015 \approx 94\ \mathrm{N\,s/m}.\]
+
+That is a *huge* mechanical impedance. So the total impedance the cone actually fights is \(15 + j94\) in one case and \(3 + j94\) in the other. The damping changed by 5×, but the *magnitudes* are
+
+\[\sqrt{15^2 + 94^2} \quad\text{vs.}\quad \sqrt{3^2 + 94^2},\]
+
+which are almost identical, because the \(j94\) from the mass dominates both. **Damping can change enormously while the steady-state cone motion barely moves.** That distinction is the key to everything that follows.
+
+---
+
+## 18. Electrical damping still matters — just don't confuse it with frequency response
+
+Two systems, \(15 + j94\) and \(3 + j94\), have nearly the same magnitude. But they are not the same system. The *real part* is what dissipates energy, and the real part differs by 5×. So while the on-axis frequency response may barely twitch, the two systems differ where energy lives and dies:
+
+- transients,
+- ringing,
+- local mechanical resonances,
+- breakup modes,
+- certain nonlinear motions.
+
+This is why, when people convert a mature passive speaker to active, the common subjective words are *"cleaner,"* *"faster,"* *"tighter."* Those are not necessarily audiophile mysticism. They are descriptions of a system whose damping changed even though its frequency response didn't. And it's also why you should never claim *"control is ten times better, therefore sound is ten times better"* — because the cone obeys the *total* mechanical impedance, not any one damping term in isolation.
+
+---
+
+## 19. Enter the Zobel network
+
+Now the Zobel finally gets its entrance.
+
+A classic passive crossover often hangs a series R–C network right across the driver's terminals:
+
+\[R_z + C_z,\]
+
+traditionally called a Zobel network or an impedance-compensation network. The textbook explanation is dry: the voice coil has inductance \(L_e\), so the impedance rises at high frequencies, while crossover design formulas assume a nice constant load like \(4\ \Omega\) or \(8\ \Omega\); the Zobel cancels the inductive rise and lets the filter see something closer to a resistor. That explanation is correct, but it sells the Zobel short.
+
+---
+
+## 20. The Zobel is also a *drain path* for the back-EMF
+
+Look at it through the lens we have spent this whole essay building.
+
+If the fourth-order low-pass presents \(|Z_s| \approx 100\ \Omega\) to the driver at some frequency, the back-EMF can barely reach the amplifier. But the Zobel is wired *directly across the driver's terminals*. Take \(R_z = 6.8\ \Omega\), \(C_z = 18\ \mu\text{F}\). At 1 kHz,
+
+\[Z_C = \frac{1}{j\omega C} \approx -j8.8\ \Omega, \qquad Z_z \approx 6.8 - j8.8\ \Omega,\]
+
+a magnitude of only about \(11\ \Omega\). So from the back-EMF's point of view, the outside world is no longer the lone \(100\ \Omega\) wall; it is
+
+\[Z_{\text{ext}} = Z_s \parallel Z_z \approx 10\ \Omega.\]
+
+Read what just happened: **the Zobel doesn't only flatten the load for the crossover's benefit. It gives the cone's back-EMF a local, low-impedance loop in which to dissipate energy** — cone motion → \(Bl v\) → Zobel current → heat in \(R_z\). In that light the Zobel is not merely an impedance cosmetic. It is a *passive electromagnetic brake resistor*, quietly bleeding off mechanical energy at the frequencies where the crossover itself has shut the door to the amplifier. That, to me, is the Zobel's real identity.
+
+---
+
+## 21. Finally, what active crossovers actually change
+
+Active (electronic) crossovers are usually described as "replacing the L and C with a DSP." That's true and almost entirely beside the point. The structural change is bigger:
+
+\[\text{passive:}\quad \text{amp} \rightarrow \text{passive crossover} \rightarrow \text{driver}\]
+
+\[\text{active:}\quad \text{DSP} \rightarrow \text{amp} \rightarrow \text{driver}\]
+
+The amplifier moves from *in front of* the filter to *behind* it. Each driver now faces a power amplifier directly, with an output impedance far below \(R_e\). For the back-EMF, the return path is no longer an \(L{-}C{-}L{-}C\) maze; it is almost exactly
+
+\[R_e + Z_{\text{amp}}, \qquad Z_{\text{amp}} \ll R_e,\]
+
+so \(Z_{\text{ext}} \approx 0\). That — not the digital-ness — is the beautiful electrical condition that active crossovers buy you. The frequency splitting happens in the signal world; the electrical-to-mechanical connection is left clean.
+
+---
+
+## 22. Putting the crossover's output impedance into the equations, once and for all
+
+We can now write the single equation that holds everything together. With a frequency-dependent source impedance \(Z_s(\omega)\) between the amplifier and the driver:
+
+\[V = \left[Z_e + Z_s\right]I + Bl v, \qquad Bl I = Z_m v,\]
+
+which combine into
+
+\[\frac{v}{V} = \frac{Bl}{\left[Z_e + Z_s\right]Z_m + (Bl)^2},\]
+
+and therefore
+
+\[\frac{p}{V} \propto \frac{j\omega S_d Bl}{\left[Z_e + Z_s\right]Z_m + (Bl)^2}.\]
+
+If this essay has a single equation worth saving, it is this one. Look at everything it gathers into one line: \(R_e\) (coil copper), \(L_e\) (coil inductance), \(Z_s(\omega)\) (amplifier, cables, and the whole passive crossover), \(M_{ms}\), \(C_{ms}\), \(R_{ms}\) (the mechanical side), \(Bl\) (the motor), \(S_d\) (the radiating area), and the \(j\omega\) that converts velocity into pressure. The scattered facts of loudspeaker design are not scattered at all; they are one chain, and this is the chain.
+
+---
+
+## 23. So why doesn't active sound "ten times better" than the theory promises?
+
+This is a genuinely important question, and it deserves a respectful answer rather than a shrug.
+
+On paper, active has an overwhelming list: direct drive, near-zero source impedance, stronger damping, no big power inductors, no capacitor ESR, no load interaction, arbitrary slopes, independent delay, independent EQ, independent level, independent limiting. By every metric it looks like it should be a *rout*.
+
+And yet, take a mature, well-designed passive speaker and convert it to active, and the honest observation is: the sound *changes*, often improves — but not by the world-shattering amount the spec sheet implies. Why?
+
+Because of three layers of dilution we have already met. First, in the driver's main working band, well below the crossover point, the crossover's source impedance is often not that large, so \(R_e\) really is still the dominant term in the back-EMF loop. Second, at the frequencies where the crossover's source impedance *does* spike, the driver has entered mass control (\(Z_m \approx j\omega M_{ms}\)), so a large change in damping barely moves the total impedance magnitude. Third, right at the crossover, the driver is already handing off to its partner, so its weight in the summed response is shrinking. Add Zobel action, the driver's own losses, the box's acoustic load, and the other driver summing on top, and a locally enormous electrical advantage gets smoothed into a much more modest audible change.
+
+The theory is not wrong. It is just that the path from "electrical advantage" to "audible difference" is long, lossy, and full of places where the advantage quietly evaporates.
+
+---
+
+## 24. Which does *not* mean active is a small deal
+
+Quite the opposite. The real prize of active crossovers is not "the same speaker, instantly transformed." It is **design freedom**.
+
+In a passive crossover, everything is entangled. Change one inductor and the magnitude changes, the phase changes, the output impedance changes, the electrical damping changes, the resonance conditions with the next capacitor change, the load seen by the preceding stage changes. A great passive crossover is rarely *calculated*; it is *coaxed* — a designer slowly tuning R, L, C, driver, box, and placement into a good state, one compromise at a time.
+
+An active system breaks the knot. Magnitude alone. Crossover alone. Delay alone. Phase alone. EQ alone. Amplifier direct-coupled. And on top: excursion limiters, thermal limiters, dynamic EQ, per-driver protection, per-box calibration, unit-to-unit compensation, FIR phase correction. The advantage isn't that you will make *this* speaker unrecognizable; it's that you finally get to design the *next* one without wearing handcuffs.
+
+---
+
+## 25. Passive crossovers, looked at again: the art of using your flaws
+
+By this point, a good passive speaker deserves *more* respect, not less.
+
+We started by listing everything wrong with passive crossovers: inductor DCR, capacitor ESR, non-flat driver impedance, non-flat output impedance, twisting phase, mismatched acoustic centers. A beginner wants to delete all of these flaws. A great designer does something subtler: they *fold the flaws into the result*. The driver's natural rolloff gets used. The impedance curve gets used. An inductor's DCR can quietly double as attenuation. A capacitor's interaction with the voice-coil inductance can shape a slope. The Zobel can, in one network, clean up the load *and* give the back-EMF a dissipation path.
+
+The goal was never "a beautiful circuit." It was always "a beautiful sound field." That is why a mature passive crossover can shrink the active-versus-passive gap far more than the raw theory predicts — not because the electrical problems don't exist, but because the designer learned to live *with* them, and turned them into tools.
+
+---
+
+## 26. Back to the question that started all this
+
+Let me close the loop.
+
+> Why is a loudspeaker's impedance curve so lumpy, while its sound-pressure response is so flat?
+
+Now the answer fits in a few sentences. The input impedance
+
+\[Z_{\text{in}} = Z_e + \frac{(Bl)^2}{Z_m}\]
+
+describes what the amplifier sees once the mechanical system has been mirrored back through the back-EMF onto the electrical port. The sound pressure
+
+\[\frac{p}{V} \propto \frac{j\omega S_d Bl}{Z_e Z_m + (Bl)^2}\]
+
+describes what comes out the far end of the whole electro-mechano-acoustic chain. At resonance the cone moves easily, so the back-EMF is strong, so the input current falls, so the electrical impedance peaks. Above resonance the cone is mass-controlled, so \(Z_m \approx j\omega M_{ms}\), the velocity falls as \(1/\omega\) — but the pressure scales as \(\omega v\), so the two cancel and the pressure stays flat. Lumpy impedance, flat pressure: no contradiction at all. They were never the same thing.
+
+---
+
+## 27. The thing to carry in your head is not a curve — it's a loop
+
+If you forget every equation in this essay, keep one picture. Not a chart, but a *loop*:
+
+\[V \rightarrow I \rightarrow Bl\,I \rightarrow Z_m \rightarrow v \rightarrow Bl\,v \rightarrow I,\]
+
+closed, round and round, the electrical and mechanical worlds gripping each other through the motor. And then, branching off the motion into the air:
+
+\[v \rightarrow S_d v \rightarrow j\omega S_d v \rightarrow p.\]
+
+Where does the passive crossover sit? It sits on the \(V \rightarrow I\) path. But because the back-EMF must return through that *same* circuit, it also sits on the \(v \rightarrow Bl v \rightarrow I\) feedback path. **That is the deep truth: a passive crossover does not merely attenuate voltage at some frequencies. It participates in the loudspeaker's own electromechanical dynamics.** And the active crossover's deepest change is to move the frequency-splitting upstream, into the signal domain, so that each driver once again faces a low-impedance amplifier and the electrical-to-mechanical connection is clean again.
+
+So the whole story can be told in one sentence:
+
+> A passive crossover shapes frequency *inside the power world*, and in doing so it cannot help but enter the driver's electromechanical feedback; an active crossover splits the frequencies *in the signal world first*, then lets the amplifier meet the mechanical world face to face.
+
+That is not "digital beats analog." That is two different *architectures* — and the whole distinction is reachable from one humble, stubborn question:
+
+> *Why is the impedance curve so ugly, when the sound is so flat?*
+
+Follow that question all the way down, and the ugly impedance curve stops being a defect report. It becomes a window. Through it you can finally watch the cone, the magnet, the current, the back-EMF, and the air all pulling on each other — which, it turns out, is what a loudspeaker has been doing the whole time.
+
+</script>
+
+<script type="text/markdown" id="md-zh">
+# 一条阻抗曲线，为什么没有变成一条声压曲线？
+## ——从扬声器的电、力、机械阻抗，到功率分频、Zobel与电子分频
+
+我一直有一个关于扬声器的困惑。
+
+看一只低音或者中低音单元的阻抗曲线，经常会觉得它“难看得要命”。
+
+几十 Hz 的谐振频率附近，一个巨大的阻抗峰。往上走以后，音圈电感又让阻抗逐渐翘起来。装进倒相箱，低频甚至还会出现双峰。
+
+它怎么看，都不像一个“平直”的东西。
+
+可是再看这只扬声器的频响。
+
+在它真正的可用频段里，声压可能相当平直。
+
+于是一个很自然的问题出现了：
+
+> 电压加在这样一个阻抗极不平坦的负载上，电流不是应该忽大忽小吗？  
+> 特别是在机械谐振点，振膜不是又特别容易运动吗？  
+> 那为什么声压没有跟着阻抗曲线一起鼓起来？
+
+这个问题看起来很基础，实际上一路追下去，会把扬声器最重要的几件事情全部串起来：
+
+**电流怎样产生力，振膜怎样运动，运动怎样产生反电动势，机械阻抗怎样映射成电阻抗，声压又为什么最终能够平直。**
+
+再往前一步，就会自然碰到另一个问题：
+
+**功率分频器到底改变了什么？**
+
+再往前一步：
+
+**为什么会有 Zobel？**
+
+最后：
+
+**电子分频真正比功率分频强在哪里？**
+
+这其实是一条非常漂亮的线。
+
+---
+
+# 一、不要从“阻抗曲线”直接跳到“声压曲线”
+
+最容易犯的错误，是看到：
+
+\[
+Z=\frac VI
+\]
+
+然后下意识觉得：
+
+阻抗大，电流小，所以声音小；
+
+阻抗小，电流大，所以声音大。
+
+这对一个电阻加热器也许还凑合。
+
+但对扬声器不行。
+
+因为扬声器不是一个简单的电负载。
+
+它是一个真正的**机电换能器**：
+
+\[
+\boxed{
+\text{电压}
+\rightarrow
+\text{电流}
+\rightarrow
+\text{力}
+\rightarrow
+\text{运动}
+\rightarrow
+\text{空气}
+\rightarrow
+\text{声压}
+}
+\]
+
+而且还有一条反向链路：
+
+\[
+\boxed{
+\text{振膜运动}
+\rightarrow
+\text{反电动势}
+\rightarrow
+\text{电流变化}
+}
+\]
+
+所以它天然就是一个闭环的机电系统。
+
+阻抗曲线只是这个系统从**电气端口向里面看**的结果。
+
+声压曲线，则是从：
+
+\[
+V\rightarrow p
+\]
+
+看到的另一条传递关系。
+
+两者当然会有关。
+
+但它们根本不是同一个函数。
+
+---
+
+# 二、扬声器的第一条方程：电
+
+先从音圈开始。
+
+如果振膜完全不动，一只音圈最简单可以写成：
+
+\[
+Z_e=R_e+j\omega L_e
+\]
+
+其中：
+
+- \(R_e\)：音圈直流电阻；
+- \(L_e\)：音圈电感。
+
+如果只到这里，扬声器确实就是一个普通 RL 负载。
+
+但音圈是在磁场里运动的。
+
+于是它会产生反电动势：
+
+\[
+\boxed{
+e_{\mathrm{bemf}}=Bl\,v
+}
+\]
+
+其中：
+
+- \(B\)：磁隙磁通密度；
+- \(l\)：有效导线长度；
+- \(Bl\)：电机强度；
+- \(v\)：音圈速度。
+
+于是电气方程应该写成：
+
+\[
+\boxed{
+V=Z_eI+Bl\,v
+}
+\]
+
+这条式子非常重要。
+
+它说：
+
+功放施加的电压，并不是全部落在音圈电阻和电感上。
+
+其中一部分，被振膜运动产生的反电动势“顶回来了”。
+
+扬声器于是开始和普通电阻完全不同。
+
+---
+
+# 三、第二条方程：力
+
+音圈电流处在磁场里，就产生洛伦兹力：
+
+\[
+\boxed{
+F=BlI
+}
+\]
+
+所以扬声器电机的两条基本机电关系非常对称：
+
+\[
+\boxed{F=BlI}
+\]
+
+和
+
+\[
+\boxed{e=Blv}
+\]
+
+一个把电流变成力。
+
+一个把速度变成电压。
+
+\(Bl\) 就像电世界和机械世界之间的“齿轮比”。
+
+---
+
+# 四、振膜不是想怎么动就怎么动：机械阻抗
+
+有了力，接下来当然要问：
+
+> 这个力能够让振膜运动多快？
+
+于是机械系统也出现了一个和电阻抗极其相似的概念：
+
+\[
+\boxed{
+Z_m=\frac Fv
+}
+\]
+
+这叫**机械阻抗**。
+
+电路里：
+
+\[
+Z_e=\frac VI
+\]
+
+机械系统里：
+
+\[
+Z_m=\frac Fv
+\]
+
+对应关系几乎一模一样：
+
+\[
+V\leftrightarrow F
+\]
+
+\[
+I\leftrightarrow v
+\]
+
+对于一个扬声器振膜，它至少有三个基本机械因素：
+
+质量：
+
+\[
+M_{ms}
+\]
+
+机械损耗：
+
+\[
+R_{ms}
+\]
+
+悬边、弹波形成的机械顺性：
+
+\[
+C_{ms}
+\]
+
+所以机械方程是：
+
+\[
+M_{ms}\ddot x
++
+R_{ms}\dot x
++
+\frac{x}{C_{ms}}
+=
+F
+\]
+
+到了正弦稳态，写成频域：
+
+\[
+\boxed{
+Z_m
+=
+R_{ms}
++j\omega M_{ms}
++\frac1{j\omega C_{ms}}
+}
+\]
+
+也就是：
+
+\[
+\boxed{
+Z_m
+=
+R_{ms}
++
+j
+\left(
+\omega M_{ms}
+-
+\frac1{\omega C_{ms}}
+\right)
+}
+\]
+
+突然之间，一个机械系统变得和 RLC 电路如此相似。
+
+质量：
+
+\[
+j\omega M
+\]
+
+像电感。
+
+弹簧：
+
+\[
+\frac1{j\omega C}
+\]
+
+像电容。
+
+机械阻尼：
+
+\[
+R
+\]
+
+就像电阻。
+
+这不是巧合。
+
+它们本质上都是描述一个系统：
+
+> 面对一个流动变量，需要多大的“努力变量”。
+
+电学是：
+
+\[
+\frac VI
+\]
+
+机械是：
+
+\[
+\frac Fv
+\]
+
+---
+
+# 五、为什么机械谐振点会出现一个巨大的电阻抗峰？
+
+现在第一个困惑可以解决了。
+
+机械谐振频率满足：
+
+\[
+\omega_sM_{ms}
+=
+\frac1{\omega_sC_{ms}}
+\]
+
+因此：
+
+\[
+\boxed{
+\omega_s
+=
+\frac1{\sqrt{M_{ms}C_{ms}}}
+}
+\]
+
+在这个频率：
+
+\[
++j\omega M
+\]
+
+和
+
+\[
+-\frac j{\omega C}
+\]
+
+正好抵消。
+
+所以：
+
+\[
+Z_m(\omega_s)\approx R_{ms}
+\]
+
+如果机械损耗很小，那么机械阻抗也就很小。
+
+由：
+
+\[
+BlI=Z_mv
+\]
+
+得到：
+
+\[
+v=\frac{BlI}{Z_m}
+\]
+
+所以对同样的电流来说：
+
+\[
+Z_m\downarrow
+\quad\Rightarrow\quad
+v\uparrow
+\]
+
+也就是说：
+
+**谐振时，振膜确实特别容易动。**
+
+那么为什么我们从电气端看，反而会看到一个巨大的阻抗峰？
+
+恰恰因为它动得太容易了。
+
+振膜速度变大：
+
+\[
+v\uparrow
+\]
+
+反电动势：
+
+\[
+Blv\uparrow
+\]
+
+于是它越来越强烈地抵消功放电压，输入电流反而降低。
+
+把：
+
+\[
+v=\frac{Bl}{Z_m}I
+\]
+
+代入电气方程：
+
+\[
+V=Z_eI+Blv
+\]
+
+得到：
+
+\[
+V
+=
+\left[
+Z_e+\frac{(Bl)^2}{Z_m}
+\right]I
+\]
+
+所以：
+
+\[
+\boxed{
+Z_{\mathrm{in}}
+=
+Z_e+
+\frac{(Bl)^2}{Z_m}
+}
+\]
+
+这条式子非常漂亮。
+
+因为在机械谐振点：
+
+\[
+Z_m\rightarrow\text{很小}
+\]
+
+于是：
+
+\[
+\frac{(Bl)^2}{Z_m}
+\rightarrow\text{很大}
+\]
+
+最终：
+
+\[
+Z_{\mathrm{in}}\rightarrow\text{很大}
+\]
+
+所以我们在阻抗曲线上看到的那个大峰，并不是说：
+
+> 振膜在那里被卡住了。
+
+恰恰相反。
+
+它是在说：
+
+> **振膜在那里特别容易运动，因此产生了巨大的反电动势。**
+
+换句话说：
+
+**电阻抗峰，是机械谐振投射到电气端口上的影子。**
+
+这一下，阻抗曲线突然有了物理意义。
+
+---
+
+# 六、可是问题还没有解决：既然谐振那么强，为什么声压没有冲上天？
+
+这正是最容易困惑的地方。
+
+如果扬声器用的是理想恒流源驱动，那么：
+
+\[
+v=\frac{BlI}{Z_m}
+\]
+
+谐振时：
+
+\[
+Z_m\rightarrow R_{ms}
+\]
+
+那么速度确实会出现很明显的峰。
+
+但是现实里的功率放大器，通常接近一个**低输出阻抗恒压源**。
+
+它规定的是：
+
+\[
+V
+\]
+
+而不是：
+
+\[
+I
+\]
+
+所以不能只看：
+
+\[
+\frac vI
+\]
+
+真正应该看的是：
+
+\[
+\frac vV
+\]
+
+把前面的两个基本方程联合起来：
+
+\[
+V=Z_eI+Blv
+\]
+
+\[
+BlI=Z_mv
+\]
+
+从第二式得到：
+
+\[
+I=\frac{Z_m}{Bl}v
+\]
+
+代回第一式：
+
+\[
+V
+=
+\frac{Z_eZ_m}{Bl}v+Blv
+\]
+
+所以：
+
+\[
+\boxed{
+\frac vV
+=
+\frac{Bl}
+{Z_eZ_m+(Bl)^2}
+}
+\]
+
+这就是单位电压产生多少振膜速度。
+
+现在看谐振点。
+
+如果：
+
+\[
+Z_m\approx R_{ms}
+\]
+
+而：
+
+\[
+Z_eR_{ms}\ll(Bl)^2
+\]
+
+那么：
+
+\[
+\frac vV
+\approx
+\frac{Bl}{(Bl)^2}
+\]
+
+所以：
+
+\[
+\boxed{
+\frac vV\approx\frac1{Bl}
+}
+\]
+
+它并不会因为：
+
+\[
+Z_m\rightarrow0
+\]
+
+而趋向无穷。
+
+为什么？
+
+因为有一个强烈的机电负反馈：
+
+\[
+v\uparrow
+\]
+
+导致：
+
+\[
+e_{\mathrm{bemf}}\uparrow
+\]
+
+导致：
+
+\[
+I\downarrow
+\]
+
+导致：
+
+\[
+F=BlI\downarrow
+\]
+
+它自己把自己控制住了。
+
+这是扬声器最漂亮的一层物理。
+
+---
+
+# 七、更大的困惑：为什么中频声压居然可以那么平？
+
+到了这里，我们只是解释了为什么机械谐振没有把事情搞得无法收拾。
+
+但还有一个更有意思的问题：
+
+为什么一只普通中低音，在几十 Hz 到几 kHz 之间，能够得到相当平坦的声压响应？
+
+答案藏在机械阻抗里。
+
+过了机械谐振频率以后：
+
+\[
+f\gg f_s
+\]
+
+质量项：
+
+\[
+\omega M_{ms}
+\]
+
+越来越大。
+
+而弹性项：
+
+\[
+\frac1{\omega C_{ms}}
+\]
+
+越来越小。
+
+二者的比例为：
+
+\[
+\frac{\omega M_{ms}}
+{1/(\omega C_{ms})}
+=
+\omega^2M_{ms}C_{ms}
+\]
+
+利用：
+
+\[
+\omega_s^2M_{ms}C_{ms}=1
+\]
+
+得到：
+
+\[
+\boxed{
+\frac{|Z_M|}{|Z_C|}
+=
+\left(\frac f{f_s}\right)^2
+}
+\]
+
+假设：
+
+\[
+f_s=50\text{ Hz}
+\]
+
+而我们看：
+
+\[
+f=1\text{ kHz}
+\]
+
+那么：
+
+\[
+\left(\frac{1000}{50}\right)^2=400
+\]
+
+也就是说：
+
+\[
+\boxed{
+1\text{ kHz 时质量项已经是弹性项的约400倍}
+}
+\]
+
+于是：
+
+\[
+Z_m
+\approx
+R_{ms}+j\omega M_{ms}
+\]
+
+再进一步：
+
+\[
+\boxed{
+Z_m\approx j\omega M_{ms}
+}
+\]
+
+这就是所谓的**质量控制区**。
+
+---
+
+# 八、质量控制区里，振膜其实动得越来越少
+
+假设音圈电感暂时不重要：
+
+\[
+Z_e\approx R_e
+\]
+
+并且进入质量控制区：
+
+\[
+Z_m\approx j\omega M_{ms}
+\]
+
+那么：
+
+\[
+\frac vV
+=
+\frac{Bl}
+{R_ej\omega M_{ms}+(Bl)^2}
+\]
+
+如果频率继续升高，以至于：
+
+\[
+\omega M_{ms}R_e
+\gg
+(Bl)^2
+\]
+
+那么：
+
+\[
+\frac vV
+\approx
+\frac{Bl}
+{j\omega M_{ms}R_e}
+\]
+
+因此：
+
+\[
+\boxed{
+|v|\propto\frac1{\omega}
+}
+\]
+
+也就是说：
+
+**给扬声器一个固定电压，频率越高，振膜速度反而越小。**
+
+每升一个 octave：
+
+\[
+v\rightarrow\frac12v
+\]
+
+也就是：
+
+\[
+-6\text{ dB/oct}
+\]
+
+如果再看位移：
+
+\[
+v=j\omega x
+\]
+
+所以：
+
+\[
+x=\frac v{j\omega}
+\]
+
+于是：
+
+\[
+\boxed{
+|x|\propto\frac1{\omega^2}
+}
+\]
+
+每升一个 octave，位移下降：
+
+\[
+-12\text{ dB/oct}
+\]
+
+这似乎又产生了一个新矛盾。
+
+既然振膜越动越少，为什么声压不跟着掉？
+
+---
+
+# 九、因为扬声器不是靠“位移”直接产生声压，而是靠加速度
+
+振膜面积记作：
+
+\[
+S_d
+\]
+
+这是振膜的**有效辐射面积**。
+
+振膜速度为：
+
+\[
+v
+\]
+
+那么体积速度：
+
+\[
+\boxed{
+U=S_dv
+}
+\]
+
+单位：
+
+\[
+\mathrm{m^3/s}
+\]
+
+对于一个尺寸相对声波波长较小、工作在活塞区的辐射体，远场声压近似满足：
+
+\[
+p(r)
+\propto
+\frac{j\omega\rho_0}{r}U
+\]
+
+因此：
+
+\[
+\boxed{
+p\propto j\omega S_dv
+}
+\]
+
+而刚刚得到：
+
+\[
+v\propto\frac1\omega
+\]
+
+所以：
+
+\[
+p
+\propto
+\omega\frac1\omega
+\]
+
+最终：
+
+\[
+\boxed{
+p\approx\text{constant}
+}
+\]
+
+谜底出来了。
+
+这就是一只普通动圈扬声器在质量控制区可以自然获得相当平坦声压响应的根本原因。
+
+---
+
+# 十、换一个更直觉的角度：声压近似正比于振膜加速度
+
+因为：
+
+\[
+a=j\omega v
+\]
+
+而：
+
+\[
+p\propto j\omega S_dv
+\]
+
+所以：
+
+\[
+\boxed{
+p\propto S_da
+}
+\]
+
+也就是说，在这一近似条件下：
+
+> **声压更接近于振膜加速度，而不是振膜位移。**
+
+于是整个过程突然变得非常简单。
+
+固定电压：
+
+\[
+V
+\]
+
+音圈电流近似：
+
+\[
+I\approx\frac V{R_e}
+\]
+
+于是电磁力：
+
+\[
+F=BlI
+\]
+
+大致恒定。
+
+而质量控制区：
+
+\[
+F\approx M_{ms}a
+\]
+
+所以：
+
+\[
+a\approx\frac F{M_{ms}}
+\]
+
+也大致恒定。
+
+最后：
+
+\[
+p\propto S_da
+\]
+
+于是：
+
+\[
+\boxed{
+V\rightarrow F\rightarrow a\rightarrow p
+}
+\]
+
+整个链条在质量控制区都接近一个固定比例。
+
+这就是平坦声压频响背后的物理。
+
+---
+
+# 十一、于是有一组很漂亮的关系
+
+对于一只工作在质量控制区、声压大致平坦的扬声器：
+
+### 位移
+
+\[
+\boxed{x\propto\frac1{f^2}}
+\]
+
+下降：
+
+\[
+-12\text{ dB/oct}
+\]
+
+### 速度
+
+\[
+\boxed{v\propto\frac1f}
+\]
+
+下降：
+
+\[
+-6\text{ dB/oct}
+\]
+
+### 加速度
+
+\[
+\boxed{a\approx\text{constant}}
+\]
+
+### 声压
+
+\[
+\boxed{p\approx\text{constant}}
+\]
+
+这也解释了一件音响工程里非常现实的事情：
+
+**低频为什么如此消耗振膜行程。**
+
+如果 100 Hz 和 1 kHz 要产生一样的声压，那么在理想活塞近似下，所需位移比例大约是：
+
+\[
+\left(\frac{1000}{100}\right)^2
+=100
+\]
+
+100 Hz 所需位移可能是 1 kHz 的一百倍。
+
+所以低频真正烧掉的，不只是功率。
+
+更重要的是：
+
+**excursion。**
+
+---
+
+# 十二、现在再回头看阻抗曲线，就没有任何矛盾了
+
+我们其实是在看三个不同的问题。
+
+输入电阻抗：
+
+\[
+\boxed{
+Z_{\mathrm{in}}
+=
+Z_e+
+\frac{(Bl)^2}{Z_m}
+}
+\]
+
+它回答：
+
+> 功放施加电压以后，会流多少电流？
+
+振膜速度：
+
+\[
+\boxed{
+\frac vV
+=
+\frac{Bl}
+{Z_eZ_m+(Bl)^2}
+}
+\]
+
+它回答：
+
+> 单位电压会让振膜运动多快？
+
+声压：
+
+\[
+p\propto j\omega S_dv
+\]
+
+所以：
+
+\[
+\boxed{
+\frac pV
+\propto
+\frac{
+j\omega S_dBl
+}{
+Z_eZ_m+(Bl)^2
+}
+}
+\]
+
+它才真正回答：
+
+> 单位输入电压最终产生多少声压？
+
+所以：
+
+\[
+Z_{\mathrm{in}}(f)
+\]
+
+不平坦，
+
+而：
+
+\[
+\frac{p(f)}{V(f)}
+\]
+
+很平坦，
+
+根本不矛盾。
+
+它们本来就是两个完全不同的函数。
+
+---
+
+# 十三、到这里，功率分频器的问题才真正开始
+
+如果功放直接驱动扬声器：
+
+\[
+V_s\rightarrow Z_e\rightarrow\text{扬声器}
+\]
+
+功放本身输出阻抗非常低，比如：
+
+\[
+0.05\Omega
+\]
+
+那么振膜产生的反电动势：
+
+\[
+Blv
+\]
+
+有一条非常低阻的电流回路。
+
+因此反电动势能够产生明显的制动电流：
+
+\[
+I_{\mathrm{bemf}}
+\]
+
+再通过：
+
+\[
+F=BlI
+\]
+
+形成电气阻尼。
+
+这就是我们常说的：
+
+**功放在“控制”振膜。**
+
+当然，“控制”这个词并不十分精确。
+
+更严格地说，是：
+
+> 振膜速度通过反电动势形成局部负反馈，并通过功放低输出阻抗产生电气阻尼。
+
+---
+
+# 十四、一阶二阶分频还容易想，四阶分频就开始变得很有意思
+
+对于一个功率低通分频器，如果只是串一个电感，我们可能会本能地说：
+
+频率升高以后：
+
+\[
+Z_L=j\omega L
+\]
+
+于是从喇叭往功放看，源阻抗越来越高。
+
+功放的电气阻尼能力越来越差。
+
+这个判断没错。
+
+但如果进入真正的 LR4，也就是四阶 Linkwitz-Riley 一类网络，就不能再简单看某一个串联电感了。
+
+例如一个典型的四阶梯形低通：
+
+\[
+L_1-C_2-L_3-C_4
+\]
+
+把理想功放输出端短路，从扬声器端往回看：
+
+\[
+\boxed{
+Z_s
+=
+Z_{C4}
+\parallel
+\left[
+Z_{L3}
++
+\left(
+Z_{C2}\parallel Z_{L1}
+\right)
+\right]
+}
+\]
+
+这时候：
+
+\[
+Z_s(f)
+\]
+
+可能出现非常强烈的频率相关变化。
+
+甚至出现局部的高阻抗反谐振。
+
+---
+
+# 十五、一个非常反直觉的例子：1 kHz，100 Ω
+
+例如我们讨论过的一组四阶低通参数：
+
+\[
+L_1=1.0\text{ mH}
+\]
+
+\[
+C_2=22\mu\text F
+\]
+
+\[
+L_3=0.47\text{ mH}
+\]
+
+\[
+C_4=4.7\mu\text F
+\]
+
+在：
+
+\[
+f=1\text{ kHz}
+\]
+
+有：
+
+\[
+Z_{L1}=j6.28\Omega
+\]
+
+\[
+Z_{C2}\approx-j7.23\Omega
+\]
+
+这两个阻抗大小非常接近，符号相反。
+
+它们并联以后，出现一个很大的阻抗：
+
+\[
+Z_{L1}\parallel Z_{C2}
+\approx j48\Omega
+\]
+
+再经过后面的网络组合，最终从扬声器端往功放看：
+
+\[
+\boxed{
+|Z_s|\approx100\Omega
+}
+\]
+
+这个结果非常重要。
+
+因为我们经常听到一个说法：
+
+> 功放输出阻抗 0.05 Ω，分频器多出来 0.2 Ω、0.5 Ω，也没什么，音圈自己的 \(R_e\) 都三四欧姆了。
+
+这句话只在某些频率范围成立。
+
+如果：
+
+\[
+|Z_s|=100\Omega
+\]
+
+而：
+
+\[
+R_e=3.2\Omega
+\]
+
+那就完全不是一回事了。
+
+此时：
+
+\[
+R_e
+\]
+
+已经根本不是回路中的“大头”。
+
+---
+
+# 十六、反电动势看到的，不再是功放，而是一堵墙
+
+振膜产生：
+
+\[
+e_{\mathrm{bemf}}=Blv
+\]
+
+如果主动直驱：
+
+\[
+I_{\mathrm{bemf}}
+\approx
+\frac{Blv}{R_e}
+\]
+
+假设：
+
+\[
+R_e=3.2\Omega
+\]
+
+回路导纳大约：
+
+\[
+0.31\text{ S}
+\]
+
+但如果功率分频器从单元端呈现：
+
+\[
+Z_s\approx-j100\Omega
+\]
+
+那么：
+
+\[
+I_{\mathrm{bemf}}
+=
+\frac{Blv}
+{Z_e+Z_s}
+\]
+
+电流幅值可能下降几十倍。
+
+更重要的是，真正产生机械耗散的，是：
+
+\[
+\boxed{
+R_{me}(\omega)
+=
+(Bl)^2
+\operatorname{Re}
+\left[
+\frac1{Z_e+Z_s}
+\right]
+}
+\]
+
+如果：
+
+\[
+Z_s
+\]
+
+大部分是电抗，那么这个导纳的实部甚至可能下降几个数量级。
+
+所以到了某些频率，四阶功率分频器确实可能让功放对于振膜的电气阻尼显著减弱。
+
+这不是“damping factor”营销数字。
+
+这是直接从机电方程里推出来的。
+
+---
+
+# 十七、可是为什么实际听起来又没有想象中那么吓人？
+
+到这里又出现了一个新的谜。
+
+假设主动直驱和被动四阶网络相比，在 1 kHz 附近：
+
+电气阻尼可能差五倍、十倍，甚至局部更多。
+
+为什么把一只成熟被动音箱改成电子分频以后，听感通常不是“天翻地覆”？
+
+这里必须重新把机械阻抗拿回来。
+
+在 1 kHz，对于一个谐振频率只有几十 Hz 的中低音：
+
+\[
+Z_m\approx j\omega M_{ms}
+\]
+
+假设：
+
+\[
+M_{ms}=15\text{ g}
+\]
+
+那么：
+
+\[
+\omega M_{ms}
+=
+2\pi\times1000\times0.015
+\]
+
+大约：
+
+\[
+94\ \mathrm{N\,s/m}
+\]
+
+这是一个非常大的机械质量阻抗。
+
+假设主动直驱带来的电气阻尼为：
+
+\[
+15\ \mathrm{N\,s/m}
+\]
+
+那么总机械阻抗可能近似为：
+
+\[
+15+j94
+\]
+
+如果被动分频以后，电气阻尼只剩：
+
+\[
+3\ \mathrm{N\,s/m}
+\]
+
+那么：
+
+\[
+3+j94
+\]
+
+电气阻尼虽然差了：
+
+\[
+5倍
+\]
+
+但是两者的阻抗模：
+
+\[
+\sqrt{15^2+94^2}
+\]
+
+和
+
+\[
+\sqrt{3^2+94^2}
+\]
+
+差别却并没有五倍。
+
+因为此时真正占主导地位的是：
+
+\[
+\boxed{j\omega M_{ms}}
+\]
+
+所以：
+
+> **阻尼差很多，并不等于稳态振膜幅度也差很多。**
+
+这个区分非常重要。
+
+---
+
+# 十八、电气阻尼仍然有意义，只是不应该把它等同于频响
+
+如果一个系统：
+
+\[
+Z=15+j94
+\]
+
+另一个：
+
+\[
+Z=3+j94
+\]
+
+它们的模确实差得不多。
+
+但这并不代表它们完全一样。
+
+因为实部决定能量耗散。
+
+也就是说，它们对：
+
+- 瞬态；
+- ringing；
+- 局部机械共振；
+- breakup；
+- 某些非线性运动；
+
+可能有明显不同。
+
+所以电子分频以后，常见的主观描述是：
+
+“更干净。”
+
+“收得更快。”
+
+“更利落。”
+
+这些描述未必完全是玄学。
+
+但也不能简单说：
+
+> 功放控制力强了十倍，所以声音一定好十倍。
+
+因为振膜真正服从的，是整个机械阻抗：
+
+\[
+Z_{\mathrm{total}}
+\]
+
+而不是其中某一个阻尼项。
+
+---
+
+# 十九、这时候 Zobel 出场了
+
+在传统功率分频器里，我们经常看到一个串联 RC 网络，并在扬声器两端：
+
+\[
+R_z+C_z
+\]
+
+通常称为：
+
+**Zobel network**
+
+或者：
+
+**阻抗补偿网络。**
+
+教科书里最常见的解释是：
+
+扬声器音圈有：
+
+\[
+L_e
+\]
+
+所以高频阻抗会随频率升高。
+
+分频器设计公式却往往假定负载近似是固定：
+
+\[
+4\Omega,\quad 8\Omega
+\]
+
+于是用 Zobel 抵消音圈电感造成的阻抗上升，让分频网络看到一个比较接近电阻的负载。
+
+这个解释没有错。
+
+但从我们刚才的角度看，Zobel 还有一个很值得注意的意义。
+
+---
+
+# 二十、Zobel 也是反电动势的“泄放路径”
+
+如果四阶低通网络在某个频率，从单元看回去：
+
+\[
+|Z_s|\approx100\Omega
+\]
+
+那么振膜的反电动势几乎看不到一个低阻功放端口。
+
+但 Zobel 是直接跨在扬声器两端的。
+
+例如：
+
+\[
+R_z=6.8\Omega
+\]
+
+\[
+C_z=18\mu\text F
+\]
+
+在 1 kHz：
+
+\[
+Z_C
+=
+\frac1{j\omega C}
+\approx-j8.8\Omega
+\]
+
+因此：
+
+\[
+Z_z
+\approx
+6.8-j8.8\Omega
+\]
+
+模大约只有：
+
+\[
+11\Omega
+\]
+
+于是对于振膜反电动势而言，外部看到的已经不是单独：
+
+\[
+100\Omega
+\]
+
+而是：
+
+\[
+Z_{\mathrm{ext}}
+=
+Z_s\parallel Z_z
+\]
+
+最终可能只剩十欧姆左右。
+
+这就非常有意思了。
+
+因为 Zobel 不只是：
+
+> 给分频器修一条漂亮的阻抗曲线。
+
+它同时也在做另一件事情：
+
+> **给音圈反电动势建立一个局部耗散回路。**
+
+振膜机械能可以走这条路径：
+
+\[
+\text{振膜机械能}
+\]
+
+\[
+\downarrow
+\]
+
+\[
+Blv
+\]
+
+\[
+\downarrow
+\]
+
+\[
+\text{Zobel电流}
+\]
+
+\[
+\downarrow
+\]
+
+\[
+R_z\text{发热}
+\]
+
+从这个角度看，Zobel 竟然有点像一个**被动电磁刹车电阻**。
+
+这比单纯说“补偿音圈电感”更有物理味道。
+
+---
+
+# 二十一、终于可以重新看“电子分频为什么理论上那么漂亮”
+
+电子分频，也就是主动分频，最大的结构变化是什么？
+
+不是滤波器由电感电容变成了 DSP。
+
+而是：
+
+\[
+\boxed{
+\text{功率放大器被移动到了分频器后面}
+}
+\]
+
+被动分频：
+
+\[
+\text{功放}
+\rightarrow
+\text{功率分频器}
+\rightarrow
+\text{单元}
+\]
+
+主动分频：
+
+\[
+\text{DSP}
+\rightarrow
+\text{功放}
+\rightarrow
+\text{单元}
+\]
+
+于是每只单元都直接面对一个极低输出阻抗的功率放大器。
+
+对于反电动势：
+
+\[
+Blv
+\]
+
+回流路径不再经过复杂的：
+
+\[
+L-C-L-C
+\]
+
+网络。
+
+而几乎直接就是：
+
+\[
+R_e+Z_{\mathrm{amp}}
+\]
+
+其中：
+
+\[
+Z_{\mathrm{amp}}\ll R_e
+\]
+
+所以：
+
+\[
+\boxed{
+Z_{\mathrm{ext}}\approx0
+}
+\]
+
+这就是主动系统最漂亮的电气条件。
+
+---
+
+# 二十二、把分频器输出阻抗正式放进基本方程
+
+如果功放与扬声器之间存在一个频率相关源阻抗：
+
+\[
+Z_s(\omega)
+\]
+
+那么电气方程应该写成：
+
+\[
+V
+=
+[Z_e+Z_s]I+Blv
+\]
+
+机械方程：
+
+\[
+BlI=Z_mv
+\]
+
+联合起来：
+
+\[
+\boxed{
+\frac vV
+=
+\frac{Bl}
+{
+[Z_e+Z_s]Z_m+(Bl)^2
+}
+}
+\]
+
+而声压：
+
+\[
+p\propto j\omega S_dv
+\]
+
+因此：
+
+\[
+\boxed{
+\frac pV
+\propto
+\frac{
+j\omega S_dBl
+}{
+[Z_e+Z_s]Z_m+(Bl)^2
+}
+}
+\]
+
+这可能是整篇文章里最值得留下的一条式子。
+
+因为它一下把所有事情放到了一起：
+
+\[
+R_e
+\]
+
+音圈铜阻。
+
+\[
+L_e
+\]
+
+音圈电感。
+
+\[
+Z_s(\omega)
+\]
+
+功放、线材、功率分频器。
+
+\[
+M_{ms}
+\]
+
+运动质量。
+
+\[
+C_{ms}
+\]
+
+悬挂顺性。
+
+\[
+R_{ms}
+\]
+
+机械损耗。
+
+\[
+Bl
+\]
+
+电机强度。
+
+\[
+S_d
+\]
+
+有效辐射面积。
+
+以及最后那个：
+
+\[
+j\omega
+\]
+
+声辐射从速度到声压的关键转换。
+
+原来看起来七零八落的知识，到这里实际上是一条完整的链。
+
+---
+
+# 二十三、那么电子分频为什么听起来又没有“理论上那么巨大”？
+
+这也是一个非常值得尊重实验结果的问题。
+
+理论上电子分频优势一大堆：
+
+- 功放直驱；
+- 极低源阻抗；
+- 更强的电气阻尼；
+- 没有大功率电感；
+- 没有电容 ESR；
+- 没有复杂负载相互作用；
+- 分频斜率随便设计；
+- delay 可以独立调；
+- EQ 可以独立调；
+- 每只单元电平可以任意调；
+- limiter 可以独立设置。
+
+怎么看都应该是“碾压”。
+
+但如果拿一只已经设计得很成熟的被动音箱，直接改成主动：
+
+**声音通常会有变化，甚至会变好，但往往没有想象中那么翻天覆地。**
+
+为什么？
+
+现在我们已经能比较有底气地回答。
+
+首先，在远低于分频点的主工作区，分频器的源阻抗往往并没有那么大。
+
+这时候：
+
+\[
+R_e
+\]
+
+确实仍然是反电动势回路的大头。
+
+其次，到了分频器源阻抗开始变得很大的频率，单元本身往往已经进入：
+
+\[
+Z_m\approx j\omega M_{ms}
+\]
+
+的质量控制区。
+
+于是即使电气阻尼变化很大，整个机械阻抗的模也未必变化同样大。
+
+再次，到了更接近分频区的地方，该单元本身已经开始退出声场。
+
+即使运动状态变化一些，它对最终总声压的权重也正在下降。
+
+再加上：
+
+Zobel、单元自身损耗、箱体声学负载、另一个单元的叠加，都在一起工作。
+
+所以一个局部非常巨大的“电气优势”，最后映射到整只音箱的听感，往往会被层层稀释。
+
+---
+
+# 二十四、这并不意味着电子分频优势不大
+
+恰恰相反。
+
+电子分频真正巨大的优势，可能并不主要体现在：
+
+> “把原来的被动音箱原封不动电子化，声音立刻提高一个时代。”
+
+它真正的优势是：
+
+\[
+\boxed{
+\text{设计自由度}
+}
+\]
+
+功率分频器里，几乎所有东西互相纠缠。
+
+换一个电感：
+
+幅度变。
+
+相位变。
+
+输出阻抗变。
+
+单元电气阻尼变。
+
+与下一个电容的谐振条件也变。
+
+负载阻抗一变，前面的滤波函数又跟着变。
+
+所以一个优秀的被动分频器，往往不是“算出来”的。
+
+而是设计师在：
+
+\[
+\text{R、L、C、单元、箱体、安装位置}
+\]
+
+之间，一点一点把一个复杂系统拧到一个漂亮状态。
+
+主动系统则完全不同。
+
+幅度：
+
+单独调。
+
+分频：
+
+单独调。
+
+delay：
+
+单独调。
+
+相位：
+
+可以调。
+
+EQ：
+
+单独调。
+
+功放：
+
+直接驱动单元。
+
+甚至还可以做：
+
+- excursion limiter；
+- thermal limiter；
+- 动态 EQ；
+- 每只单元独立保护；
+- 每只箱子独立校准；
+- 单元一致性补偿；
+- FIR 相位校正。
+
+所以电子分频真正的优势不是：
+
+> 我一定让同一只音箱突然变得完全不像以前。
+
+而是：
+
+> **我终于不必再戴着镣铐设计这只音箱了。**
+
+---
+
+# 二十五、功率分频其实是一门“利用缺点”的艺术
+
+说到这里，反而应该对优秀的被动音箱设计多一点敬意。
+
+我们最开始看功率分频器，觉得它到处是缺点：
+
+电感有 DCR。
+
+电容有 ESR。
+
+单元阻抗不平。
+
+分频器输出阻抗也不平。
+
+相位又转来转去。
+
+不同单元声学中心还不一样。
+
+怎么看都不够“理想”。
+
+可优秀的音箱设计师做的事情，恰恰不是把这些缺陷全部消灭掉。
+
+而是：
+
+\[
+\boxed{
+\text{把这些本来麻烦的东西组合成一个正确的声学结果}
+}
+\]
+
+单元天然滚降，可以利用。
+
+阻抗曲线，可以利用。
+
+某一个电感的 DCR，有时甚至可以顺手充当衰减。
+
+某一个电容与单元电感的相互作用，可以帮助塑造斜率。
+
+Zobel 可以同时：
+
+- 改善滤波器负载；
+- 改善阻抗；
+- 给反电动势提供耗散。
+
+最终设计目标从来都不是：
+
+\[
+\text{得到一个漂亮的电路}
+\]
+
+而是：
+
+\[
+\boxed{
+\text{得到一个漂亮的声场}
+}
+\]
+
+这也是为什么一套非常成熟的被动分频器，能够让电子分频改造之后的听感差距比我们想象的小得多。
+
+它不是因为那些电气问题不存在。
+
+而是因为设计师早已经学会了和这些问题共处。
+
+---
+
+# 二十六、最后回到最初的困惑
+
+最开始的问题是：
+
+> 为什么扬声器阻抗曲线那么不平，可声压响应却能那么平？
+
+现在答案已经可以浓缩成几句话。
+
+因为扬声器阻抗：
+
+\[
+\boxed{
+Z_{\mathrm{in}}
+=
+Z_e+
+\frac{(Bl)^2}{Z_m}
+}
+\]
+
+描述的是：
+
+**机械系统通过反电动势映射到电气端口以后，功放看到什么。**
+
+而扬声器声压：
+
+\[
+\boxed{
+\frac pV
+\propto
+\frac{
+j\omega S_dBl
+}{
+Z_eZ_m+(Bl)^2
+}
+}
+\]
+
+描述的是：
+
+**电压经过电—机—声整个链条以后，最终产生什么。**
+
+在机械谐振点：
+
+振膜容易运动。
+
+所以反电动势变大。
+
+所以输入电流降低。
+
+所以电阻抗出现一个峰。
+
+而在高于谐振的质量控制区：
+
+\[
+Z_m\approx j\omega M_{ms}
+\]
+
+振膜速度：
+
+\[
+v\propto\frac1\omega
+\]
+
+但声压：
+
+\[
+p\propto\omega v
+\]
+
+于是：
+
+\[
+p\approx\text{constant}
+\]
+
+所以：
+
+\[
+\boxed{
+\text{阻抗可以非常不平，而声压仍然可以相当平。}
+}
+\]
+
+它们一点也不矛盾。
+
+---
+
+# 二十七、真正应该画在脑子里的，不是一条曲线，而是一条因果链
+
+最后，我越来越觉得理解扬声器最好的办法，不是背：
+
+“这里有一个阻抗峰。”
+
+“这里有一个 \(Q_{es}\)。”
+
+“这里有一个 Zobel。”
+
+“这里是四阶 LR。”
+
+而是始终把下面这条链放在脑子里：
+
+\[
+\boxed{
+V
+\rightarrow
+I
+\rightarrow
+BlI
+\rightarrow
+Z_m
+\rightarrow
+v
+\rightarrow
+Blv
+\rightarrow
+I
+}
+\]
+
+这是一个闭环。
+
+然后从振膜运动再往空气里走：
+
+\[
+\boxed{
+v
+\rightarrow
+S_dv
+\rightarrow
+j\omega S_dv
+\rightarrow
+p
+}
+\]
+
+功率分频器插在哪里？
+
+插在：
+
+\[
+V\rightarrow I
+\]
+
+这条路上。
+
+但因为反电动势也必须经过同一条电路回来，所以它同时插在：
+
+\[
+v\rightarrow Blv\rightarrow I
+\]
+
+这条反馈路上。
+
+这就是为什么功率分频器不只是“把某些频率的电压衰减掉”。
+
+**它其实参与了扬声器本身的机电动力学。**
+
+而电子分频最本质的变化，就是把频率选择这件事情搬到了功率放大之前。
+
+于是每只单元重新直接面对一个低阻抗功放。
+
+电和机械之间的连接重新变得干净。
+
+所以，电子分频真正漂亮的地方，也许可以用一句话概括：
+
+> **功率分频是在功率世界里塑造频率，同时不可避免地介入单元的机电反馈；电子分频则先在信号世界里把频率分开，再让功放直接面对机械世界。**
+
+这不是简单的“数字比模拟先进”。
+
+它其实是两种完全不同的系统架构。
+
+而这一切，都可以从最开始那个很朴素的困惑开始：
+
+> **为什么扬声器的阻抗曲线明明那么难看，声音却可以那么平？**
+
+追到底才发现，那条难看的阻抗曲线并不是系统的缺陷说明书。
+
+它其实是一扇窗。
+
+透过它，我们第一次真正看见了振膜、磁场、电流、反电动势和空气之间，是怎样彼此拉扯着工作的。
+</script>
+
+<script>
+// ── Simple markdown → HTML converter ──
+function renderMarkdown(md) {
+  // Escape HTML entities in text nodes
+  let out = md;
+
+  // Protect code blocks first
+  const codeBlocks = [];
+  out = out.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    const i = codeBlocks.length;
+    const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    codeBlocks.push(`<pre><code>${escaped}</code></pre>`);
+    return `\x00CODE${i}\x00`;
+  });
+
+  // Protect inline code
+  const inlineCodes = [];
+  out = out.replace(/`([^`]+)`/g, (_, code) => {
+    const i = inlineCodes.length;
+    const escaped = code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    inlineCodes.push(`<code>${escaped}</code>`);
+    return `\x00ICODE${i}\x00`;
+  });
+
+  // Protect display math \[...\]
+  const displayMath = [];
+  out = out.replace(/\\\[([\s\S]*?)\\\]/g, (_, tex) => {
+    const i = displayMath.length;
+    displayMath.push(`<div class="display-math">\\[${tex}\\]</div>`);
+    return `\x00DMATH${i}\x00`;
+  });
+
+  // Protect inline math \(...\)
+  const inlineMath = [];
+  out = out.replace(/\\\(([\s\S]*?)\\\)/g, (_, tex) => {
+    const i = inlineMath.length;
+    inlineMath.push(`\\(${tex}\\)`);
+    return `\x00IMATH${i}\x00`;
+  });
+
+  // Escape remaining HTML
+  out = out.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Headers
+  out = out.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+  out = out.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  out = out.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  out = out.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // Horizontal rules
+  out = out.replace(/^---$/gm, '<hr>');
+
+  // Blockquotes — handle nested
+  out = out.replace(/^&gt; &gt; (.+)$/gm, '<blockquote><blockquote><p>$1</p></blockquote></blockquote>');
+  out = out.replace(/^&gt; (.+)$/gm, '<blockquote><p>$1</p></blockquote>');
+  // Merge adjacent blockquotes
+  out = out.replace(/<\/blockquote>\n<blockquote>/g, '\n');
+
+  // Bold and italic
+  out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // Unordered lists — group consecutive lines
+  out = out.replace(/^- (.+)$/gm, '<li>$1</li>');
+  out = out.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+
+  // Paragraphs: wrap remaining non-empty, non-tag lines
+  const lines = out.split('\n');
+  let result = '';
+  let inPara = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === '') {
+      if (inPara) { result += '</p>\n'; inPara = false; }
+      continue;
+    }
+    // Skip lines that are already block-level HTML
+    if (/^<(h[1-4]|ul|ol|li|blockquote|pre|hr|div|\/)/.test(line)) {
+      if (inPara) { result += '</p>\n'; inPara = false; }
+      result += line + '\n';
+      continue;
+    }
+    if (!inPara) { result += '<p>'; inPara = true; }
+    else { result += '\n'; }
+    result += line;
+  }
+  if (inPara) result += '</p>\n';
+
+  out = result;
+
+  // Restore inline math
+  out = out.replace(/\x00IMATH(\d+)\x00/g, (_, i) => inlineMath[parseInt(i)]);
+  // Restore display math
+  out = out.replace(/\x00DMATH(\d+)\x00/g, (_, i) => displayMath[parseInt(i)]);
+  // Restore inline code
+  out = out.replace(/\x00ICODE(\d+)\x00/g, (_, i) => inlineCodes[parseInt(i)]);
+  // Restore code blocks
+  out = out.replace(/\x00CODE(\d+)\x00/g, (_, i) => codeBlocks[parseInt(i)]);
+
+  return out;
+}
+
+// ── Navigation ──
+function showArticle(lang) {
+  const mdEl = document.getElementById('md-' + lang);
+  if (!mdEl) return;
+  const md = mdEl.textContent;
+  const html = renderMarkdown(md);
+
+  document.getElementById('landing').style.display = 'none';
+  const av = document.getElementById('article-view');
+  av.classList.add('show');
+  document.getElementById('article-content').innerHTML = html;
+  document.getElementById('article-label').textContent =
+    lang === 'en' ? 'English' : '中文';
+
+  // Typeset math
+  if (window.MathJax) {
+    MathJax.typesetPromise([document.getElementById('article-content')]).catch(console.error);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function backToLanding() {
+  document.getElementById('landing').style.display = '';
+  const av = document.getElementById('article-view');
+  av.classList.remove('show');
+  document.getElementById('article-content').innerHTML = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Handle browser back/forward
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.article) {
+    showArticle(e.state.article);
+    // Avoid re-pushing
+  } else {
+    backToLanding();
+  }
+});
+
+// Override showArticle to push history
+const origShow = showArticle;
+showArticle = function(lang) {
+  history.pushState({ article: lang }, '', '#' + lang);
+  origShow(lang);
+};
+
+const origBack = backToLanding;
+backToLanding = function() {
+  history.pushState({}, '', window.location.pathname);
+  origBack();
+};
+
+// Handle initial hash
+(function() {
+  const hash = window.location.hash.replace('#', '');
+  if (hash === 'en' || hash === 'zh') {
+    showArticle(hash);
+  }
+})();
+</script>
+
+</body>
+</html>
